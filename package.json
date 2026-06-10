@@ -1,0 +1,16 @@
+{
+  "name": "contrast-checker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build && cp manifest.json dist/",
+    "dev": "vite build --watch"
+  },
+  "devDependencies": {
+    "@types/firefox-webext-browser": "143.0.0",
+    "typescript": "^5.4.0",
+    "vite": "^5.4.0",
+    "webextension-polyfill": "^0.12.0"
+  }
+}
