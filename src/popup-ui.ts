@@ -224,6 +224,25 @@ const POPUP_STYLES = `
   color: #888;
   font-size: 13px;
 }
+.cc-toast {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #4caf50;
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.cc-toast.show {
+  opacity: 1;
+}
 `;
 
 function rgbToHex(rgb: string): string {
@@ -395,22 +414,51 @@ export class ContrastPopup {
     const spacer = document.createElement('div');
     spacer.style.flex = '1';
 
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'cc-btn cc-btn-secondary';
+    copyBtn.textContent = 'Copy details';
+    copyBtn.addEventListener('click', () => this.doCopy(copyBtn));
+
     const exportBtn = document.createElement('button');
     exportBtn.className = 'cc-btn cc-btn-primary';
     exportBtn.textContent = 'Export JSON';
     exportBtn.addEventListener('click', () => this.doExport());
 
-    footer.append(recheck, spacer, exportBtn);
+    footer.append(recheck, spacer, copyBtn, exportBtn);
     return footer;
   }
 
-  private doExport(): void {
-    const data: ExportData = {
+  private buildExportData(): ExportData {
+    return {
       url: window.location.href,
       region: this.region,
       timestamp: formatTime(),
       results: this.results,
     };
+  }
+
+  private doCopy(btn: HTMLElement): void {
+    const data = this.buildExportData();
+    navigator.clipboard.writeText(JSON.stringify(data, null, 2)).then(() => {
+      const toast = document.createElement('div');
+      toast.className = 'cc-toast show';
+      toast.textContent = 'Copied!';
+      btn.style.position = 'relative';
+      btn.appendChild(toast);
+      setTimeout(() => toast.remove(), 1500);
+    }).catch(() => {
+      const toast = document.createElement('div');
+      toast.className = 'cc-toast show';
+      toast.textContent = 'Failed to copy';
+      toast.style.background = '#f44336';
+      btn.style.position = 'relative';
+      btn.appendChild(toast);
+      setTimeout(() => toast.remove(), 1500);
+    });
+  }
+
+  private doExport(): void {
+    const data = this.buildExportData();
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
